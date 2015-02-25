@@ -30,6 +30,10 @@ import hudson.model.Run;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
+import org.apache.maven.repository.internal.MavenRepositorySystemUtils;
+import org.eclipse.aether.artifact.ArtifactType;
+import org.eclipse.aether.artifact.ArtifactTypeRegistry;
+
 /**
  * Represents a {@code maven-metadata.xml} file.
  */
@@ -38,6 +42,7 @@ public class MetadataRepositoryItem extends TextRepositoryItem {
     private MavenBuild build;
     private String groupId, artifactId, version;
     private Map<MavenArtifact,ArtifactRepositoryItem> items = new HashMap<MavenArtifact,ArtifactRepositoryItem>();
+    private ArtifactTypeRegistry artifactTypeRegistry = MavenRepositorySystemUtils.newSession().getArtifactTypeRegistry();
 
     private static String formatDateVersion(Date date, int buildNo) {
         // we used to tack the build number on here, but that causes problems because the build
@@ -157,7 +162,8 @@ public class MetadataRepositoryItem extends TextRepositoryItem {
                 buf.append("        <classifier>").append(theArtifact.classifier).append("</classifier>\n");
             }
 
-            buf.append("        <extension>").append(theArtifact.type).append("</extension>\n");
+            final ArtifactType artifactType = artifactTypeRegistry.get(theArtifact.type);
+            buf.append("        <extension>").append(artifactType.getExtension()).append("</extension>\n");
             buf.append("        <value>").append(itemVersion).append("</value>\n");
             buf.append("        <updated>").append(lastMod).append("</updated>\n");
             buf.append("      </snapshotVersion>\n");
